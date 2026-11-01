@@ -1,4 +1,4 @@
-package com.utn.tpi.ms2.refactor.domain;
+package com.utn.tpi.ms2.refactor.domain.model;
 
 public enum Prioridad {
     ALTA(1),
@@ -15,10 +15,10 @@ public enum Prioridad {
         return nivel;
     }
 
-    public static Prioridad fromNivel(int nivel) {
+    public static Prioridad desdeNivel(int nivel) {
         for (Prioridad p : values()) {
             if (p.nivel == nivel) return p;
         }
-        throw new IllegalArgumentException("Prioridad invalida: debe ser 1 (Alta), 2 (Media) o 3 (Baja)");
+        throw new IllegalArgumentException("Prioridad invalida. Debe ser 1, 2 o 3");
     }
 }

@@ -1,4 +1,4 @@
-package com.utn.tpi.ms2.refactor.domain;
+package com.utn.tpi.ms2.refactor.domain.model;
 
 public enum EstadoSolicitud {
     PENDIENTE,
@@ -6,7 +6,7 @@ public enum EstadoSolicitud {
     APROBADA,
     RECHAZADA;
 
-    public static EstadoSolicitud fromString(String valor) {
+    public static EstadoSolicitud desdeTexto(String valor) {
         try {
             return EstadoSolicitud.valueOf(valor.toUpperCase().trim());
         } catch (Exception e) {

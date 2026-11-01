@@ -1,28 +1,36 @@
 package com.utn.tpi.ms2.refactor.dto;
 
-import com.utn.tpi.ms2.refactor.domain.Solicitud;
+import com.utn.tpi.ms2.refactor.domain.model.Solicitud;
 
-// Refactoring: Move Method (resuelve Feature Envy encapsulando la proyección del reporte)
-public record SolicitudResponseDto(
-        int id,
-        String tipo,
-        String prioridadTexto,
-        String estado,
-        String estudianteLegajo,
-        String estudianteNombre,
-        String responsable,
-        String area
-) {
-    public static SolicitudResponseDto fromDomain(Solicitud s) {
-        return new SolicitudResponseDto(
-                s.getId(),
-                s.getTipo(),
-                s.getPrioridad().name(),
-                s.getEstado().name(),
-                s.getEstudiante().getLegajo(),
-                s.getEstudiante().getNombreCompleto(),
-                s.getResponsableNombre(),
-                s.getAreaDestino()
-        );
+public class SolicitudResponseDto {
+    private Integer id;
+    private String tipo;
+    private String prioridadTexto;
+    private String estado;
+    private String estudianteLegajo;
+    private String estudianteNombre;
+    private String responsable;
+    private String area;
+
+    public static SolicitudResponseDto desdeEntidad(Solicitud s) {
+        SolicitudResponseDto dto = new SolicitudResponseDto();
+        dto.id = s.getId();
+        dto.tipo = s.getTipo();
+        dto.prioridadTexto = s.getPrioridad().name();
+        dto.estado = s.getEstado().name();
+        dto.estudianteLegajo = s.getEstudiante().getLegajo();
+        dto.estudianteNombre = s.getEstudiante().getNombreCompleto();
+        dto.responsable = s.getResponsableNombre();
+        dto.area = s.getAreaDestino();
+        return dto;
     }
+
+    public Integer getId() { return id; }
+    public String getTipo() { return tipo; }
+    public String getPrioridadTexto() { return prioridadTexto; }
+    public String getEstado() { return estado; }
+    public String getEstudianteLegajo() { return estudianteLegajo; }
+    public String getEstudianteNombre() { return estudianteNombre; }
+    public String getResponsable() { return responsable; }
+    public String getArea() { return area; }
 }

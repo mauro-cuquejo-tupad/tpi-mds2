@@ -1,81 +1,95 @@
 package com.utn.tpi.ms2.refactor.service;
 
-import com.utn.tpi.ms2.refactor.domain.EstadoSolicitud;
-import com.utn.tpi.ms2.refactor.domain.Estudiante;
-import com.utn.tpi.ms2.refactor.domain.Prioridad;
-import com.utn.tpi.ms2.refactor.domain.Solicitud;
+import com.utn.tpi.ms2.refactor.domain.model.*;
+import com.utn.tpi.ms2.refactor.domain.repository.SolicitudRepository;
 import com.utn.tpi.ms2.refactor.dto.CrearSolicitudRequestDto;
-import com.utn.tpi.ms2.refactor.repository.SolicitudRepository;
+import com.utn.tpi.ms2.refactor.dto.SolicitudResponseDto;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class SolicitudService {
 
     private final SolicitudRepository repository;
 
-    // Inyección de dependencias por constructor (DIP)
+    // DIP: Inyección de dependencias por constructor
     public SolicitudService(SolicitudRepository repository) {
         this.repository = repository;
     }
 
-    public Solicitud crearSolicitud(CrearSolicitudRequestDto dto) {
-        validarRequest(dto);
+    public SolicitudResponseDto registrarSolicitud(CrearSolicitudRequestDto dto) {
+        validarCreacion(dto);
 
         Estudiante estudiante = new Estudiante(
-                dto.legajo(),
-                dto.nombreEstudiante(),
-                dto.emailEstudiante(),
-                dto.carrera()
+                dto.getLegajo(),
+                dto.getNombreEstudiante(),
+                dto.getEmailEstudiante(),
+                dto.getCarrera()
         );
 
-        Solicitud solicitud = new Solicitud(
+        Prioridad prioridad = Prioridad.desdeNivel(dto.getPrioridad());
+        Solicitud nueva = new Solicitud(
                 null,
-                dto.tipo(),
-                dto.descripcion(),
-                Prioridad.fromNivel(dto.prioridad()),
-                EstadoSolicitud.PENDIENTE,
-                LocalDateTime.now(),
+                dto.getTipo(),
+                dto.getDescripcion(),
+                prioridad,
                 estudiante,
                 "SIN_ASIGNAR",
                 "MESA_ENTRADAS"
         );
 
-        return repository.guardar(solicitud);
+        Solicitud guardada = repository.guardar(nueva);
+        return SolicitudResponseDto.desdeEntidad(guardada);
     }
 
-    public Solicitud cambiarEstado(int id, String nuevoEstadoStr) {
-        Solicitud solicitud = buscarPorIdOError(id);
-        EstadoSolicitud nuevoEstado = EstadoSolicitud.fromString(nuevoEstadoStr);
-        solicitud.actualizarEstado(nuevoEstado);
-        return repository.guardar(solicitud);
+    public SolicitudResponseDto cambiarEstado(Integer id, String nuevoEstadoTexto) {
+        Solicitud solicitud = buscarORechazar(id);
+        EstadoSolicitud estado = EstadoSolicitud.desdeTexto(nuevoEstadoTexto);
+        solicitud.cambiarEstado(estado);
+        repository.actualizar(solicitud);
+        return SolicitudResponseDto.desdeEntidad(solicitud);
     }
 
-    public Solicitud asignarResponsable(int id, String responsable, String area) {
-        Solicitud solicitud = buscarPorIdOError(id);
+    public SolicitudResponseDto asignarResponsable(Integer id, String responsable, String area) {
+        if (responsable == null || responsable.isBlank() || area == null || area.isBlank()) {
+            throw new IllegalArgumentException("Responsable y area son obligatorios");
+        }
+        Solicitud solicitud = buscarORechazar(id);
         solicitud.asignarResponsable(responsable, area);
-        return repository.guardar(solicitud);
+        repository.actualizar(solicitud);
+        return SolicitudResponseDto.desdeEntidad(solicitud);
     }
 
-    public List<Solicitud> listarReporte(String estado, String area) {
-        return repository.listarTodas().stream()
-                .filter(s -> estado == null || s.getEstado().name().equalsIgnoreCase(estado.trim()))
-                .filter(s -> area == null || s.getAreaDestino().equalsIgnoreCase(area.trim()))
-                .toList();
+    public List<SolicitudResponseDto> listarReporte(String estadoFiltro, String areaFiltro) {
+        return repository.obtenerTodas().stream()
+                .filter(s -> estadoFiltro == null || s.getEstado().name().equalsIgnoreCase(estadoFiltro))
+                .filter(s -> areaFiltro == null || s.getAreaDestino().equalsIgnoreCase(areaFiltro))
+                .map(SolicitudResponseDto::desdeEntidad)
+                .collect(Collectors.toList());
     }
 
-    // Refactoring: Extract Method
-    private Solicitud buscarPorIdOError(int id) {
+    // Refactoring obligatorio: Extract Method
+    private Solicitud buscarORechazar(Integer id) {
         return repository.buscarPorId(id)
-                .orElseThrow(() -> new NoSuchElementException("Solicitud con ID " + id + " no encontrada"));
+                .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada con ID: " + id));
     }
 
-    private void validarRequest(CrearSolicitudRequestDto dto) {
-        if (dto.tipo() == null || dto.tipo().isBlank()) throw new IllegalArgumentException("El tipo no puede estar vacio");
-        if (dto.descripcion() == null || dto.descripcion().isBlank()) throw new IllegalArgumentException("La descripcion no puede estar vacia");
-        if (dto.legajo() == null || dto.legajo().isBlank()) throw new IllegalArgumentException("El legajo es obligatorio");
+    // Refactoring obligatorio: Extract Method
+    private void validarCreacion(CrearSolicitudRequestDto dto) {
+        if (dto.getTipo() == null || dto.getTipo().isBlank()) {
+            throw new IllegalArgumentException("El tipo de solicitud es obligatorio");
+        }
+        if (dto.getDescripcion() == null || dto.getDescripcion().isBlank()) {
+            throw new IllegalArgumentException("La descripcion es obligatoria");
+        }
+        if (dto.getLegajo() == null || dto.getLegajo().isBlank()) {
+            throw new IllegalArgumentException("El legajo es obligatorio");
+        }
+        if (dto.getPrioridad() == null || dto.getPrioridad() < 1 || dto.getPrioridad() > 3) {
+            throw new IllegalArgumentException("Prioridad invalida. Debe ser 1, 2 o 3");
+        }
     }
 }

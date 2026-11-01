@@ -1,6 +1,5 @@
 package com.utn.tpi.ms2.refactor.controller;
 
-import com.utn.tpi.ms2.refactor.domain.Solicitud;
 import com.utn.tpi.ms2.refactor.dto.CrearSolicitudRequestDto;
 import com.utn.tpi.ms2.refactor.dto.SolicitudResponseDto;
 import com.utn.tpi.ms2.refactor.service.SolicitudService;
@@ -22,21 +21,18 @@ public class SolicitudController {
     }
 
     @PostMapping
-    public ResponseEntity<String> crearSolicitud(@RequestBody CrearSolicitudRequestDto request) {
+    public ResponseEntity<?> registrar(@RequestBody CrearSolicitudRequestDto dto) {
         try {
-            Solicitud creada = service.crearSolicitud(request);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body("Solicitud creada con ID: " + creada.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarSolicitud(dto));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PutMapping("/{id}/estado")
-    public ResponseEntity<String> cambiarEstado(@PathVariable int id, @RequestParam String nuevoEstado) {
+    public ResponseEntity<?> cambiarEstado(@PathVariable Integer id, @RequestParam String nuevoEstado) {
         try {
-            service.cambiarEstado(id, nuevoEstado);
-            return ResponseEntity.ok("Estado actualizado exitosamente");
+            return ResponseEntity.ok(service.cambiarEstado(id, nuevoEstado));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalArgumentException e) {
@@ -45,13 +41,11 @@ public class SolicitudController {
     }
 
     @PutMapping("/{id}/responsable")
-    public ResponseEntity<String> asignarResponsable(
-            @PathVariable int id,
-            @RequestParam String responsable,
-            @RequestParam String area) {
+    public ResponseEntity<?> asignarResponsable(@PathVariable Integer id,
+                                                @RequestParam String responsable,
+                                                @RequestParam String area) {
         try {
-            service.asignarResponsable(id, responsable, area);
-            return ResponseEntity.ok("Responsable asignado");
+            return ResponseEntity.ok(service.asignarResponsable(id, responsable, area));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalArgumentException e) {
@@ -60,13 +54,9 @@ public class SolicitudController {
     }
 
     @GetMapping
-    public ResponseEntity<List<SolicitudResponseDto>> listarReporte(
+    public ResponseEntity<List<SolicitudResponseDto>> listar(
             @RequestParam(required = false) String estado,
             @RequestParam(required = false) String area) {
-        List<SolicitudResponseDto> reporte = service.listarReporte(estado, area)
-                .stream()
-                .map(SolicitudResponseDto::fromDomain)
-                .toList();
-        return ResponseEntity.ok(reporte);
+        return ResponseEntity.ok(service.listarReporte(estado, area));
     }
 }
