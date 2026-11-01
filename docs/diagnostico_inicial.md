@@ -70,7 +70,7 @@ public String estado; // "PENDIENTE", "EN_REVISION", "RESUELTO", "RECHAZADO"
 
 ```java
 if (prioridad < 1 || prioridad > 3) {
-    return ResponseEntity.badRequest()
+        return ResponseEntity.badRequest()
             .body("Error: Prioridad invalida. Debe ser 1, 2 o 3");
 }
 ```
@@ -78,7 +78,7 @@ if (prioridad < 1 || prioridad > 3) {
 ```java
 if (!nuevoEstado.equals("PENDIENTE") && !nuevoEstado.equals("EN_REVISION")
         && !nuevoEstado.equals("APROBADA") && !nuevoEstado.equals("RECHAZADA")) {
-    return ResponseEntity.badRequest().body("Estado invalido");
+        return ResponseEntity.badRequest().body("Estado invalido");
 }
 ```
 
@@ -96,9 +96,9 @@ if (!nuevoEstado.equals("PENDIENTE") && !nuevoEstado.equals("EN_REVISION")
 Map<String, Object> dto = new HashMap<>();
 
 dto.put("prioridadTexto",
-    p[2].equals("1") ? "ALTA" : (p[2].equals("2") ? "MEDIA" : "BAJA"));
+        p[2].equals("1") ? "ALTA" : (p[2].equals("2") ? "MEDIA" : "BAJA"));
 
-dto.put("estudianteNombre", p[6]);
+        dto.put("estudianteNombre", p[6]);
 ```
 
 - **Impacto:** El controlador inspecciona las posiciones de memoria/arreglo internas para decidir cómo formatear y presentar los datos de Estudiante y Solicitud, en lugar de dejar que las propias entidades o un DTO específico expongan su representación.
@@ -119,8 +119,8 @@ private static final String FILE_PATH = "solicitudes_db.txt";
 
 ```java
 try (BufferedWriter bw = new BufferedWriter(...)) {
-    // Escritura en archivo
-}
+        // Escritura en archivo
+        }
 ```
 
 - **Impacto:** El servicio de aplicación depende directamente de un detalle de bajo nivel (archivo físico).
@@ -129,4 +129,22 @@ try (BufferedWriter bw = new BufferedWriter(...)) {
 
 ### 7. Data Class / Anemic Domain Model
 
-- **Ub
+- **Ubicación:** `Estudiante.java` y `Solicitud.java`.
+- **Evidencia en código:** Clases con todos sus atributos definidos como `public`, sin encapsulamiento ni comportamiento de negocio asociado.
+- **Impacto:** No hay control de invariantes: cualquier clase externa puede mutar el estado o el legajo de un estudiante en cualquier momento dejándolo en un estado inválido.
+- **Riesgo de mantenimiento:** Dispersión de la lógica de validación del dominio en controladores o servicios externos.
+- **Prioridad:** **Media**.
+
+### 8. Duplicated Code & Magic Values
+
+- **Ubicación:** `SolicitudServiceLegacy.java` (métodos `crearSolicitud`, `cambiarEstado`, `asignarResponsable`).
+
+**Evidencia en código:**
+
+- Validaciones repetidas: `if (campo == null || campo.trim().equals(""))`.
+- Índices mágicos de parseo CSV dispersos: `p[0]`, `p[3]`, `p[9]`, `p[10]`.
+- Estados iniciales hardcodeados: `"SIN_ASIGNAR"`, `"MESA_ENTRADAS"`.
+
+- **Impacto:** Si se altera el orden de las columnas en el archivo de texto, fallan silenciosamente múltiples operaciones independientes.
+- **Riesgo de mantenimiento:** Alto riesgo de introducir inconsistencias al modificar un índice en un método y olvidar actualizarlo en otro.
+- **Prioridad:** **Media**.
