@@ -84,7 +84,7 @@ public class SolicitudService {
         validarObligatorio(dto.getTipo(), "El tipo de solicitud es obligatorio");
         validarObligatorio(dto.getDescripcion(), "La descripcion es obligatoria");
         validarObligatorio(dto.getLegajo(), "El legajo es obligatorio");
-        if (dto.getPrioridad() == null || dto.getPrioridad() < 1 || dto.getPrioridad() > 3) {
+        if (dto.getPrioridad() == null) {
             throw new IllegalArgumentException("Prioridad invalida. Debe ser 1, 2 o 3");
         }
     }
