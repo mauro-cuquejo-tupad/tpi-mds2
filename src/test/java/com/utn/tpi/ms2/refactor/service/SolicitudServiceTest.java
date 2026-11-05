@@ -109,6 +109,25 @@ class SolicitudServiceTest {
     }
 
     @Test
+    @DisplayName("Debe lanzar IllegalArgumentException si la prioridad es nula")
+    void debeLanzarExcepcionSiPrioridadEsNula() {
+        CrearSolicitudRequestDto dtoPrioridadNula = new CrearSolicitudRequestDto(
+                "EXCEPCION_CORRELATIVAS",
+                "Descripcion valida",
+                null, // Nula
+                "50123",
+                "Juan Perez",
+                "juan@frba.utn.edu.ar",
+                "TUP"
+        );
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.registrarSolicitud(dtoPrioridadNula));
+        assertEquals("Prioridad invalida. Debe ser 1, 2 o 3", ex.getMessage());
+        verify(repository, never()).guardar(any());
+    }
+
+    @Test
     @DisplayName("Debe cambiar el estado de la solicitud de forma exitosa")
     void debeCambiarEstadoExitosamente() {
         Solicitud existente = new Solicitud(
