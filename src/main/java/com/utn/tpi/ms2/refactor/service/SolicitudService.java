@@ -13,6 +13,9 @@ import java.util.stream.Collectors;
 @Service
 public class SolicitudService {
 
+    private static final String RESPONSABLE_POR_DEFECTO = "SIN_ASIGNAR";
+    private static final String AREA_POR_DEFECTO = "MESA_ENTRADAS";
+
     private final SolicitudRepository repository;
 
     // DIP: Inyección de dependencias por constructor
@@ -37,8 +40,8 @@ public class SolicitudService {
                 dto.getDescripcion(),
                 prioridad,
                 estudiante,
-                "SIN_ASIGNAR",
-                "MESA_ENTRADAS"
+                RESPONSABLE_POR_DEFECTO,
+                AREA_POR_DEFECTO
         );
 
         Solicitud guardada = repository.guardar(nueva);
