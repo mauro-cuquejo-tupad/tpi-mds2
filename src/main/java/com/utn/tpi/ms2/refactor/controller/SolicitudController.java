@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/v2/solicitudes")
@@ -21,36 +20,25 @@ public class SolicitudController {
     }
 
     @PostMapping
-    public ResponseEntity<?> registrar(@RequestBody CrearSolicitudRequestDto dto) {
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarSolicitud(dto));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<SolicitudResponseDto> registrar(@RequestBody CrearSolicitudRequestDto dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarSolicitud(dto));
     }
 
     @PutMapping("/{id}/estado")
-    public ResponseEntity<?> cambiarEstado(@PathVariable Integer id, @RequestParam String nuevoEstado) {
-        try {
-            return ResponseEntity.ok(service.cambiarEstado(id, nuevoEstado));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<SolicitudResponseDto>
+    cambiarEstado(@PathVariable Integer id,
+                  @RequestParam String nuevoEstado) {
+        return ResponseEntity.ok(service.cambiarEstado(id, nuevoEstado));
     }
 
+
     @PutMapping("/{id}/responsable")
-    public ResponseEntity<?> asignarResponsable(@PathVariable Integer id,
-                                                @RequestParam String responsable,
-                                                @RequestParam String area) {
-        try {
-            return ResponseEntity.ok(service.asignarResponsable(id, responsable, area));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<SolicitudResponseDto>
+    asignarResponsable(@PathVariable Integer id,
+                       @RequestParam String responsable,
+                       @RequestParam String area) {
+
+        return ResponseEntity.ok(service.asignarResponsable(id, responsable, area));
     }
 
     @GetMapping
