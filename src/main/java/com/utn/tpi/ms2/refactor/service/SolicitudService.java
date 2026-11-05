@@ -57,9 +57,8 @@ public class SolicitudService {
     }
 
     public SolicitudResponseDto asignarResponsable(Integer id, String responsable, String area) {
-        if (responsable == null || responsable.isBlank() || area == null || area.isBlank()) {
-            throw new IllegalArgumentException("Responsable y area son obligatorios");
-        }
+        validarObligatorio(responsable, "Responsable y area son obligatorios");
+        validarObligatorio(area, "Responsable y area son obligatorios");
         Solicitud solicitud = buscarORechazar(id);
         solicitud.asignarResponsable(responsable, area);
         repository.actualizar(solicitud);
@@ -82,17 +81,17 @@ public class SolicitudService {
 
     // Refactoring obligatorio: Extract Method
     private void validarCreacion(CrearSolicitudRequestDto dto) {
-        if (dto.getTipo() == null || dto.getTipo().isBlank()) {
-            throw new IllegalArgumentException("El tipo de solicitud es obligatorio");
-        }
-        if (dto.getDescripcion() == null || dto.getDescripcion().isBlank()) {
-            throw new IllegalArgumentException("La descripcion es obligatoria");
-        }
-        if (dto.getLegajo() == null || dto.getLegajo().isBlank()) {
-            throw new IllegalArgumentException("El legajo es obligatorio");
-        }
+        validarObligatorio(dto.getTipo(), "El tipo de solicitud es obligatorio");
+        validarObligatorio(dto.getDescripcion(), "La descripcion es obligatoria");
+        validarObligatorio(dto.getLegajo(), "El legajo es obligatorio");
         if (dto.getPrioridad() == null || dto.getPrioridad() < 1 || dto.getPrioridad() > 3) {
             throw new IllegalArgumentException("Prioridad invalida. Debe ser 1, 2 o 3");
+        }
+    }
+
+    private void validarObligatorio(String valor, String mensajeError) {
+        if (valor == null || valor.isBlank()) {
+            throw new IllegalArgumentException(mensajeError);
         }
     }
 }
