@@ -5,6 +5,7 @@ import com.utn.tpi.ms2.refactor.domain.repository.SolicitudRepository;
 import com.utn.tpi.ms2.refactor.dto.CrearSolicitudRequestDto;
 import com.utn.tpi.ms2.refactor.dto.SolicitudResponseDto;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -12,6 +13,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class SolicitudService {
+
+    private static final String RESPONSABLE_POR_DEFECTO = "SIN_ASIGNAR";
+    private static final String AREA_POR_DEFECTO = "MESA_ENTRADAS";
 
     private final SolicitudRepository repository;
 
@@ -37,8 +41,8 @@ public class SolicitudService {
                 dto.getDescripcion(),
                 prioridad,
                 estudiante,
-                "SIN_ASIGNAR",
-                "MESA_ENTRADAS"
+                RESPONSABLE_POR_DEFECTO,
+                AREA_POR_DEFECTO
         );
 
         Solicitud guardada = repository.guardar(nueva);
@@ -54,9 +58,8 @@ public class SolicitudService {
     }
 
     public SolicitudResponseDto asignarResponsable(Integer id, String responsable, String area) {
-        if (responsable == null || responsable.isBlank() || area == null || area.isBlank()) {
-            throw new IllegalArgumentException("Responsable y area son obligatorios");
-        }
+        validarObligatorio(responsable, "Responsable y area son obligatorios");
+        validarObligatorio(area, "Responsable y area son obligatorios");
         Solicitud solicitud = buscarORechazar(id);
         solicitud.asignarResponsable(responsable, area);
         repository.actualizar(solicitud);
@@ -79,17 +82,17 @@ public class SolicitudService {
 
     // Refactoring obligatorio: Extract Method
     private void validarCreacion(CrearSolicitudRequestDto dto) {
-        if (dto.getTipo() == null || dto.getTipo().isBlank()) {
-            throw new IllegalArgumentException("El tipo de solicitud es obligatorio");
-        }
-        if (dto.getDescripcion() == null || dto.getDescripcion().isBlank()) {
-            throw new IllegalArgumentException("La descripcion es obligatoria");
-        }
-        if (dto.getLegajo() == null || dto.getLegajo().isBlank()) {
-            throw new IllegalArgumentException("El legajo es obligatorio");
-        }
-        if (dto.getPrioridad() == null || dto.getPrioridad() < 1 || dto.getPrioridad() > 3) {
+        validarObligatorio(dto.getTipo(), "El tipo de solicitud es obligatorio");
+        validarObligatorio(dto.getDescripcion(), "La descripcion es obligatoria");
+        validarObligatorio(dto.getLegajo(), "El legajo es obligatorio");
+        if (dto.getPrioridad() == null) {
             throw new IllegalArgumentException("Prioridad invalida. Debe ser 1, 2 o 3");
+        }
+    }
+
+    private void validarObligatorio(String valor, String mensajeError) {
+        if (!StringUtils.hasText(valor)) {
+            throw new IllegalArgumentException(mensajeError);
         }
     }
 }
