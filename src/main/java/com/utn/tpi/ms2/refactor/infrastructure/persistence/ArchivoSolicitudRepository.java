@@ -12,9 +12,19 @@ import java.util.*;
 @Repository
 public class ArchivoSolicitudRepository implements SolicitudRepository {
 
-    private static final String RUTA_ARCHIVO = "solicitudes_db.txt";
+    static final String RUTA_ARCHIVO_POR_DEFECTO = "solicitudes_db.txt";
     private static final String SEPARADOR = ";";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    private final String rutaArchivo;
+
+    public ArchivoSolicitudRepository() {
+        this(RUTA_ARCHIVO_POR_DEFECTO);
+    }
+
+    public ArchivoSolicitudRepository(String rutaArchivo) {
+        this.rutaArchivo = rutaArchivo;
+    }
 
     @Override
     public synchronized Solicitud guardar(Solicitud solicitud) {
@@ -29,7 +39,7 @@ public class ArchivoSolicitudRepository implements SolicitudRepository {
                 solicitud.getAreaDestino()
         );
 
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(RUTA_ARCHIVO, true))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo, true))) {
             bw.write(mapearEntidadALinea(nueva));
             bw.newLine();
         } catch (IOException e) {
@@ -46,7 +56,7 @@ public class ArchivoSolicitudRepository implements SolicitudRepository {
     @Override
     public List<Solicitud> obtenerTodas() {
         List<Solicitud> listado = new ArrayList<>();
-        File file = new File(RUTA_ARCHIVO);
+        File file = new File(rutaArchivo);
         if (!file.exists()) return listado;
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -65,7 +75,7 @@ public class ArchivoSolicitudRepository implements SolicitudRepository {
     @Override
     public synchronized void actualizar(Solicitud solicitudModificada) {
         List<Solicitud> solicitudes = obtenerTodas();
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(RUTA_ARCHIVO, false))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo, false))) {
             for (Solicitud s : solicitudes) {
                 Solicitud item = s.getId().equals(solicitudModificada.getId()) ? solicitudModificada : s;
                 bw.write(mapearEntidadALinea(item));
