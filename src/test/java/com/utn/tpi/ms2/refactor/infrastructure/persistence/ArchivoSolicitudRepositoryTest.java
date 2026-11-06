@@ -1,14 +1,5 @@
 package com.utn.tpi.ms2.refactor.infrastructure.persistence;
 
-import com.utn.tpi.ms2.refactor.domain.model.EstadoSolicitud;
-import com.utn.tpi.ms2.refactor.domain.model.Estudiante;
-import com.utn.tpi.ms2.refactor.domain.model.Prioridad;
-import com.utn.tpi.ms2.refactor.domain.model.Solicitud;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,7 +7,21 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import com.utn.tpi.ms2.refactor.domain.exception.PersistenciaException;
+import com.utn.tpi.ms2.refactor.domain.model.EstadoSolicitud;
+import com.utn.tpi.ms2.refactor.domain.model.Estudiante;
+import com.utn.tpi.ms2.refactor.domain.model.Prioridad;
+import com.utn.tpi.ms2.refactor.domain.model.Solicitud;
 
 class ArchivoSolicitudRepositoryTest {
 
@@ -142,4 +147,41 @@ class ArchivoSolicitudRepositoryTest {
         assertEquals("Materias: AED, PROG, BD", recuperada.getDescripcion());
         assertTrue(Files.readString(archivo).contains("Materias: AED, PROG, BD"));
     }
+    private static final String LINEA_VALIDA = 
+        "1;HOMOLOGACION;2;PENDIENTE;2026-10-30 10:00:00;50123;Ana Test;ana@test.com;TUP;SIN_ASIGNAR;MESA_ENTRADAS;Prueba";
+
+private ArchivoSolicitudRepository repoConContenido(Path dir, String contenido) throws IOException {
+    Path archivo = dir.resolve("solicitudes.txt");
+    Files.writeString(archivo, contenido + System.lineSeparator());
+    return new ArchivoSolicitudRepository(archivo.toString());
+}
+
+@Test
+void lineaValidaSeLeeSinErrores(@TempDir Path dir) throws IOException {
+    assertEquals(1, repoConContenido(dir, LINEA_VALIDA).obtenerTodas().size());
+}
+
+@Test
+void lineaConMenosDeDoceColumnasLanzaPersistenciaException(@TempDir Path dir) throws IOException {
+    ArchivoSolicitudRepository repo = repoConContenido(dir, "1;HOMOLOGACION;2");
+    assertThrows(PersistenciaException.class, repo::obtenerTodas);
+}
+
+@Test
+void prioridadInvalidaLanzaPersistenciaException(@TempDir Path dir) throws IOException {
+    ArchivoSolicitudRepository repo = repoConContenido(dir, LINEA_VALIDA.replace(";2;", ";9;"));
+    assertThrows(PersistenciaException.class, repo::obtenerTodas);
+}
+
+@Test
+void estadoInvalidoLanzaPersistenciaException(@TempDir Path dir) throws IOException {
+    ArchivoSolicitudRepository repo = repoConContenido(dir, LINEA_VALIDA.replace("PENDIENTE", "XYZ"));
+    assertThrows(PersistenciaException.class, repo::obtenerTodas);
+}
+
+@Test
+void fechaInvalidaLanzaPersistenciaException(@TempDir Path dir) throws IOException {
+    ArchivoSolicitudRepository repo = repoConContenido(dir, LINEA_VALIDA.replace("2026-10-30 10:00:00", "no-es-fecha"));
+    assertThrows(PersistenciaException.class, repo::obtenerTodas);
+}
 }
