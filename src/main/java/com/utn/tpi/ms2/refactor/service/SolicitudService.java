@@ -5,6 +5,7 @@ import com.utn.tpi.ms2.refactor.domain.repository.SolicitudRepository;
 import com.utn.tpi.ms2.refactor.dto.CrearSolicitudRequestDto;
 import com.utn.tpi.ms2.refactor.dto.SolicitudResponseDto;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -90,7 +91,7 @@ public class SolicitudService {
     }
 
     private void validarObligatorio(String valor, String mensajeError) {
-        if (valor == null || valor.isBlank()) {
+        if (!StringUtils.hasText(valor)) {
             throw new IllegalArgumentException(mensajeError);
         }
     }
