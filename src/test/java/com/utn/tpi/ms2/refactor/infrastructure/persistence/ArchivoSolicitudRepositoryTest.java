@@ -25,6 +25,9 @@ import com.utn.tpi.ms2.refactor.domain.model.Solicitud;
 
 class ArchivoSolicitudRepositoryTest {
 
+    private static final String LINEA_VALIDA =
+            "1;HOMOLOGACION;2;PENDIENTE;2026-10-30 10:00:00;50123;Ana Test;ana@test.com;TUP;SIN_ASIGNAR;MESA_ENTRADAS;Prueba";
+
     @TempDir
     Path directorioTemporal;
 
@@ -47,6 +50,10 @@ class ArchivoSolicitudRepositoryTest {
                 "SIN_ASIGNAR",
                 "MESA_ENTRADAS"
         );
+    }
+
+    private void escribirArchivo(String contenido) throws IOException {
+        Files.writeString(archivo, contenido + System.lineSeparator());
     }
 
     @Test
@@ -147,41 +154,44 @@ class ArchivoSolicitudRepositoryTest {
         assertEquals("Materias: AED, PROG, BD", recuperada.getDescripcion());
         assertTrue(Files.readString(archivo).contains("Materias: AED, PROG, BD"));
     }
-    private static final String LINEA_VALIDA = 
-        "1;HOMOLOGACION;2;PENDIENTE;2026-10-30 10:00:00;50123;Ana Test;ana@test.com;TUP;SIN_ASIGNAR;MESA_ENTRADAS;Prueba";
 
-private ArchivoSolicitudRepository repoConContenido(Path dir, String contenido) throws IOException {
-    Path archivo = dir.resolve("solicitudes.txt");
-    Files.writeString(archivo, contenido + System.lineSeparator());
-    return new ArchivoSolicitudRepository(archivo.toString());
-}
+    @Test
+    @DisplayName("Una línea válida se lee sin errores")
+    void lineaValidaSeLeeSinErrores() throws IOException {
+        escribirArchivo(LINEA_VALIDA);
 
-@Test
-void lineaValidaSeLeeSinErrores(@TempDir Path dir) throws IOException {
-    assertEquals(1, repoConContenido(dir, LINEA_VALIDA).obtenerTodas().size());
-}
+        assertEquals(1, repository.obtenerTodas().size());
+    }
 
-@Test
-void lineaConMenosDeDoceColumnasLanzaPersistenciaException(@TempDir Path dir) throws IOException {
-    ArchivoSolicitudRepository repo = repoConContenido(dir, "1;HOMOLOGACION;2");
-    assertThrows(PersistenciaException.class, repo::obtenerTodas);
-}
+    @Test
+    @DisplayName("Una línea con menos de 12 columnas lanza PersistenciaException")
+    void lineaConMenosDeDoceColumnasLanzaPersistenciaException() throws IOException {
+        escribirArchivo("1;HOMOLOGACION;2");
 
-@Test
-void prioridadInvalidaLanzaPersistenciaException(@TempDir Path dir) throws IOException {
-    ArchivoSolicitudRepository repo = repoConContenido(dir, LINEA_VALIDA.replace(";2;", ";9;"));
-    assertThrows(PersistenciaException.class, repo::obtenerTodas);
-}
+        assertThrows(PersistenciaException.class, () -> repository.obtenerTodas());
+    }
 
-@Test
-void estadoInvalidoLanzaPersistenciaException(@TempDir Path dir) throws IOException {
-    ArchivoSolicitudRepository repo = repoConContenido(dir, LINEA_VALIDA.replace("PENDIENTE", "XYZ"));
-    assertThrows(PersistenciaException.class, repo::obtenerTodas);
-}
+    @Test
+    @DisplayName("Una prioridad inválida lanza PersistenciaException")
+    void prioridadInvalidaLanzaPersistenciaException() throws IOException {
+        escribirArchivo(LINEA_VALIDA.replace(";2;", ";9;"));
 
-@Test
-void fechaInvalidaLanzaPersistenciaException(@TempDir Path dir) throws IOException {
-    ArchivoSolicitudRepository repo = repoConContenido(dir, LINEA_VALIDA.replace("2026-10-30 10:00:00", "no-es-fecha"));
-    assertThrows(PersistenciaException.class, repo::obtenerTodas);
-}
+        assertThrows(PersistenciaException.class, () -> repository.obtenerTodas());
+    }
+
+    @Test
+    @DisplayName("Un estado inválido lanza PersistenciaException")
+    void estadoInvalidoLanzaPersistenciaException() throws IOException {
+        escribirArchivo(LINEA_VALIDA.replace("PENDIENTE", "XYZ"));
+
+        assertThrows(PersistenciaException.class, () -> repository.obtenerTodas());
+    }
+
+    @Test
+    @DisplayName("Una fecha inválida lanza PersistenciaException")
+    void fechaInvalidaLanzaPersistenciaException() throws IOException {
+        escribirArchivo(LINEA_VALIDA.replace("2026-10-30 10:00:00", "no-es-fecha"));
+
+        assertThrows(PersistenciaException.class, () -> repository.obtenerTodas());
+    }
 }

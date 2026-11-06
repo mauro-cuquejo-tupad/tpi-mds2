@@ -56,7 +56,8 @@ public class ArchivoSolicitudRepository implements SolicitudRepository {
             bw.write(mapearEntidadALinea(nueva));
             bw.newLine();
         } catch (IOException e) {
-            throw new PersistenciaException("No se pudo guardar la solicitud en el archivo: " + rutaArchivo, e);        }
+            throw new PersistenciaException("No se pudo guardar la solicitud en el archivo: " + rutaArchivo, e);
+        }
         return nueva;
     }
 
@@ -79,7 +80,8 @@ public class ArchivoSolicitudRepository implements SolicitudRepository {
                 }
             }
         } catch (IOException e) {
-            throw new PersistenciaException("No se pudo leer el archivo de solicitudes: " + rutaArchivo, e);        }
+            throw new PersistenciaException("No se pudo leer el archivo de solicitudes: " + rutaArchivo, e);
+        }
         return listado;
     }
 
@@ -93,7 +95,8 @@ public class ArchivoSolicitudRepository implements SolicitudRepository {
                 bw.newLine();
             }
         } catch (IOException e) {
-            throw new PersistenciaException("No se pudo actualizar el archivo de solicitudes: " + rutaArchivo, e);        }
+            throw new PersistenciaException("No se pudo actualizar el archivo de solicitudes: " + rutaArchivo, e);
+        }
     }
 
     private String mapearEntidadALinea(Solicitud s) {
@@ -113,7 +116,7 @@ public class ArchivoSolicitudRepository implements SolicitudRepository {
         );
     }
 
-        private Solicitud mapearLineaAEntidad(String linea) {
+    private Solicitud mapearLineaAEntidad(String linea) {
         try {
             String[] p = linea.split(SEPARADOR);
             Estudiante estudiante = new Estudiante(p[5], p[6], p[7], p[8]);

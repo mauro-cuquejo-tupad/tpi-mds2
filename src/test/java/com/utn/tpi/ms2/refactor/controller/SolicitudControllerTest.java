@@ -20,7 +20,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.utn.tpi.ms2.refactor.domain.exception.PersistenciaException;
 import com.utn.tpi.ms2.refactor.service.SolicitudService;
 
-
 @WebMvcTest(SolicitudController.class)
 class SolicitudControllerTest {
 
@@ -65,7 +64,8 @@ class SolicitudControllerTest {
                         .content(cuerpo))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Prioridad invalida. Debe ser 1, 2 o 3"));
-}
+    }
+
     @Test
     @DisplayName("Debe responder 500 con mensaje general cuando falla la persistencia")
     void debeResponder500CuandoFallaLaPersistencia() throws Exception {
@@ -76,6 +76,5 @@ class SolicitudControllerTest {
                         .param("nuevoEstado", "APROBADA"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("Error interno al acceder a los datos"));
-
-}
+    }
 }

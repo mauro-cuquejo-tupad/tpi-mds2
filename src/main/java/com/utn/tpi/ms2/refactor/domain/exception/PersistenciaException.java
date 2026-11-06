@@ -1,4 +1,3 @@
-
 package com.utn.tpi.ms2.refactor.domain.exception;
 
 /**
