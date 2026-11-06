@@ -114,7 +114,7 @@ class SolicitudServiceTest {
         CrearSolicitudRequestDto dtoPrioridadNula = new CrearSolicitudRequestDto(
                 "EXCEPCION_CORRELATIVAS",
                 "Descripcion valida",
-                null, // Nula
+                null,
                 "50123",
                 "Juan Perez",
                 "juan@frba.utn.edu.ar",
