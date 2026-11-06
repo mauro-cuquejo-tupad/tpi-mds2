@@ -1,14 +1,5 @@
 package com.utn.tpi.ms2.refactor.infrastructure.persistence;
 
-import com.utn.tpi.ms2.refactor.domain.model.EstadoSolicitud;
-import com.utn.tpi.ms2.refactor.domain.model.Estudiante;
-import com.utn.tpi.ms2.refactor.domain.model.Prioridad;
-import com.utn.tpi.ms2.refactor.domain.model.Solicitud;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,9 +7,26 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import com.utn.tpi.ms2.refactor.domain.exception.PersistenciaException;
+import com.utn.tpi.ms2.refactor.domain.model.EstadoSolicitud;
+import com.utn.tpi.ms2.refactor.domain.model.Estudiante;
+import com.utn.tpi.ms2.refactor.domain.model.Prioridad;
+import com.utn.tpi.ms2.refactor.domain.model.Solicitud;
 
 class ArchivoSolicitudRepositoryTest {
+
+    private static final String LINEA_VALIDA =
+            "1;HOMOLOGACION;2;PENDIENTE;2026-10-30 10:00:00;50123;Ana Test;ana@test.com;TUP;SIN_ASIGNAR;MESA_ENTRADAS;Prueba";
 
     @TempDir
     Path directorioTemporal;
@@ -42,6 +50,10 @@ class ArchivoSolicitudRepositoryTest {
                 "SIN_ASIGNAR",
                 "MESA_ENTRADAS"
         );
+    }
+
+    private void escribirArchivo(String contenido) throws IOException {
+        Files.writeString(archivo, contenido + System.lineSeparator());
     }
 
     @Test
@@ -141,5 +153,45 @@ class ArchivoSolicitudRepositoryTest {
 
         assertEquals("Materias: AED, PROG, BD", recuperada.getDescripcion());
         assertTrue(Files.readString(archivo).contains("Materias: AED, PROG, BD"));
+    }
+
+    @Test
+    @DisplayName("Una línea válida se lee sin errores")
+    void lineaValidaSeLeeSinErrores() throws IOException {
+        escribirArchivo(LINEA_VALIDA);
+
+        assertEquals(1, repository.obtenerTodas().size());
+    }
+
+    @Test
+    @DisplayName("Una línea con menos de 12 columnas lanza PersistenciaException")
+    void lineaConMenosDeDoceColumnasLanzaPersistenciaException() throws IOException {
+        escribirArchivo("1;HOMOLOGACION;2");
+
+        assertThrows(PersistenciaException.class, () -> repository.obtenerTodas());
+    }
+
+    @Test
+    @DisplayName("Una prioridad inválida lanza PersistenciaException")
+    void prioridadInvalidaLanzaPersistenciaException() throws IOException {
+        escribirArchivo(LINEA_VALIDA.replace(";2;", ";9;"));
+
+        assertThrows(PersistenciaException.class, () -> repository.obtenerTodas());
+    }
+
+    @Test
+    @DisplayName("Un estado inválido lanza PersistenciaException")
+    void estadoInvalidoLanzaPersistenciaException() throws IOException {
+        escribirArchivo(LINEA_VALIDA.replace("PENDIENTE", "XYZ"));
+
+        assertThrows(PersistenciaException.class, () -> repository.obtenerTodas());
+    }
+
+    @Test
+    @DisplayName("Una fecha inválida lanza PersistenciaException")
+    void fechaInvalidaLanzaPersistenciaException() throws IOException {
+        escribirArchivo(LINEA_VALIDA.replace("2026-10-30 10:00:00", "no-es-fecha"));
+
+        assertThrows(PersistenciaException.class, () -> repository.obtenerTodas());
     }
 }

@@ -1,13 +1,26 @@
 package com.utn.tpi.ms2.refactor.infrastructure.persistence;
 
-import com.utn.tpi.ms2.refactor.domain.model.*;
-import com.utn.tpi.ms2.refactor.domain.repository.SolicitudRepository;
-import org.springframework.stereotype.Repository;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Repository;
+
+import com.utn.tpi.ms2.refactor.domain.exception.PersistenciaException;
+import com.utn.tpi.ms2.refactor.domain.model.EstadoSolicitud;
+import com.utn.tpi.ms2.refactor.domain.model.Estudiante;
+import com.utn.tpi.ms2.refactor.domain.model.Prioridad;
+import com.utn.tpi.ms2.refactor.domain.model.Solicitud;
+import com.utn.tpi.ms2.refactor.domain.repository.SolicitudRepository;
 
 @Repository
 public class ArchivoSolicitudRepository implements SolicitudRepository {
@@ -43,7 +56,7 @@ public class ArchivoSolicitudRepository implements SolicitudRepository {
             bw.write(mapearEntidadALinea(nueva));
             bw.newLine();
         } catch (IOException e) {
-            throw new RuntimeException("Error de E/S al guardar solicitud en archivo", e);
+            throw new PersistenciaException("No se pudo guardar la solicitud en el archivo: " + rutaArchivo, e);
         }
         return nueva;
     }
@@ -67,7 +80,7 @@ public class ArchivoSolicitudRepository implements SolicitudRepository {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error al leer archivo de solicitudes", e);
+            throw new PersistenciaException("No se pudo leer el archivo de solicitudes: " + rutaArchivo, e);
         }
         return listado;
     }
@@ -82,7 +95,7 @@ public class ArchivoSolicitudRepository implements SolicitudRepository {
                 bw.newLine();
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error al actualizar archivo", e);
+            throw new PersistenciaException("No se pudo actualizar el archivo de solicitudes: " + rutaArchivo, e);
         }
     }
 
@@ -104,19 +117,23 @@ public class ArchivoSolicitudRepository implements SolicitudRepository {
     }
 
     private Solicitud mapearLineaAEntidad(String linea) {
-        String[] p = linea.split(SEPARADOR);
-        Estudiante estudiante = new Estudiante(p[5], p[6], p[7], p[8]);
-        return new Solicitud(
-                Integer.parseInt(p[0]),
-                p[1],
-                p[11],
-                Prioridad.desdeNivel(Integer.parseInt(p[2])),
-                EstadoSolicitud.desdeTexto(p[3]),
-                LocalDateTime.parse(p[4], FORMATTER),
-                estudiante,
-                p[9],
-                p[10]
-        );
+        try {
+            String[] p = linea.split(SEPARADOR);
+            Estudiante estudiante = new Estudiante(p[5], p[6], p[7], p[8]);
+            return new Solicitud(
+                    Integer.parseInt(p[0]),
+                    p[1],
+                    p[11],
+                    Prioridad.desdeNivel(Integer.parseInt(p[2])),
+                    EstadoSolicitud.desdeTexto(p[3]),
+                    LocalDateTime.parse(p[4], FORMATTER),
+                    estudiante,
+                    p[9],
+                    p[10]
+            );
+        } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException | DateTimeParseException e) {
+            throw new PersistenciaException("Linea danada en el archivo de solicitudes", e);
+        }
     }
 
     private int generarSiguienteId() {
