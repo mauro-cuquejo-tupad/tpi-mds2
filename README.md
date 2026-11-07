@@ -16,7 +16,7 @@ Comisión: M25 C4-05 | Ciclo Lectivo: 2026
 | Díaz de Quintana, Melisa Magalí | 35513 |
 
 - **Profesor:** Sebastián Bruselario
-- **Tutor:** Nideano C. Capo
+- **Tutor:** Samuel Tocaimaza
 
 ---
 
