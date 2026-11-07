@@ -507,8 +507,8 @@
 									"pm.test(\"Status code es 400 Bad Request\", function () {",
 									"    pm.response.to.have.status(400);",
 									"});",
-									"pm.test(\"Mensaje indica que el tipo no puede estar vacío\", function () {",
-									"    pm.expect(pm.response.text()).to.include(\"El tipo no puede estar vacio\");",
+									"pm.test(\"Mensaje indica que el tipo es obligatorio\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"El tipo de solicitud es obligatorio\");",
 									"});"
 								],
 								"type": "text/javascript"
