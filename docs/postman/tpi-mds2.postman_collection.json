@@ -1,0 +1,821 @@
+{
+	"info": {
+		"_postman_id": "a9b7e3f2-8c1d-4e5a-9023-bc1234567890",
+		"name": "TPI MDS2 - Gestión de Solicitudes Académicas",
+		"description": "Colección de pruebas manuales y de regresión para el Trabajo Práctico Integrador de Metodología de Sistemas II.\n\nContiene los casos de prueba de la matriz de la Etapa 6 (CP-01 a CP-05) y operaciones complementarias, organizados por versión:\n- Legacy: /api/solicitudes\n- Refactorizada (v2): /api/v2/solicitudes",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Legacy (/api/solicitudes)",
+			"description": "Endpoints de la versión inicial monolítica legacy con parámetros por Query String y respuestas en texto plano.",
+			"item": [
+				{
+					"name": "CP-01 - Crear solicitud exitosa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Responde texto de confirmación con ID\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Solicitud creada con ID:\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/solicitudes?tipo=HOMOLOGACION&descripcion=Equivalencia de materias correlativas&prioridad=1&legajo=50123&nombreEstudiante=Juan Perez&emailEstudiante=juan.perez@alumnos.utn.edu.ar&carrera=TUP",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"solicitudes"
+							],
+							"query": [
+								{
+									"key": "tipo",
+									"value": "HOMOLOGACION",
+									"description": "Tipo de solicitud"
+								},
+								{
+									"key": "descripcion",
+									"value": "Equivalencia de materias correlativas",
+									"description": "Detalle del pedido"
+								},
+								{
+									"key": "prioridad",
+									"value": "1",
+									"description": "Prioridad alta (1)"
+								},
+								{
+									"key": "legajo",
+									"value": "50123",
+									"description": "Legajo universitario"
+								},
+								{
+									"key": "nombreEstudiante",
+									"value": "Juan Perez",
+									"description": "Nombre completo"
+								},
+								{
+									"key": "emailEstudiante",
+									"value": "juan.perez@alumnos.utn.edu.ar",
+									"description": "Correo institucional"
+								},
+								{
+									"key": "carrera",
+									"value": "TUP",
+									"description": "Carrera cursada"
+								}
+							]
+						},
+						"description": "CP-01: Registro exitoso en legacy pasando 7 query params sueltos."
+					},
+					"response": []
+				},
+				{
+					"name": "CP-02 - Error campo obligatorio vacío (tipo vacío)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"Mensaje indica error en el tipo\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"El tipo no puede estar vacio\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/solicitudes?tipo=&descripcion=Equivalencia de materias correlativas&prioridad=1&legajo=50123&nombreEstudiante=Juan Perez&emailEstudiante=juan.perez@alumnos.utn.edu.ar&carrera=TUP",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"solicitudes"
+							],
+							"query": [
+								{
+									"key": "tipo",
+									"value": "",
+									"description": "Campo obligatorio vacío"
+								},
+								{
+									"key": "descripcion",
+									"value": "Equivalencia de materias correlativas"
+								},
+								{
+									"key": "prioridad",
+									"value": "1"
+								},
+								{
+									"key": "legajo",
+									"value": "50123"
+								},
+								{
+									"key": "nombreEstudiante",
+									"value": "Juan Perez"
+								},
+								{
+									"key": "emailEstudiante",
+									"value": "juan.perez@alumnos.utn.edu.ar"
+								},
+								{
+									"key": "carrera",
+									"value": "TUP"
+								}
+							]
+						},
+						"description": "CP-02: Validación de rechazo cuando un campo requerido se envía en blanco."
+					},
+					"response": []
+				},
+				{
+					"name": "CP-03 - Error prioridad fuera de rango (prioridad 5)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"Mensaje indica prioridad inválida\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Prioridad invalida\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/solicitudes?tipo=HOMOLOGACION&descripcion=Equivalencia de materias correlativas&prioridad=5&legajo=50123&nombreEstudiante=Juan Perez&emailEstudiante=juan.perez@alumnos.utn.edu.ar&carrera=TUP",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"solicitudes"
+							],
+							"query": [
+								{
+									"key": "tipo",
+									"value": "HOMOLOGACION"
+								},
+								{
+									"key": "descripcion",
+									"value": "Equivalencia de materias correlativas"
+								},
+								{
+									"key": "prioridad",
+									"value": "5",
+									"description": "Prioridad fuera de rango (permitidas 1, 2, 3)"
+								},
+								{
+									"key": "legajo",
+									"value": "50123"
+								},
+								{
+									"key": "nombreEstudiante",
+									"value": "Juan Perez"
+								},
+								{
+									"key": "emailEstudiante",
+									"value": "juan.perez@alumnos.utn.edu.ar"
+								},
+								{
+									"key": "carrera",
+									"value": "TUP"
+								}
+							]
+						},
+						"description": "CP-03: Control de rango numérico en prioridad."
+					},
+					"response": []
+				},
+				{
+					"name": "CP-04 - Cambiar estado a EN_REVISION",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Mensaje confirma actualización\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Estado actualizado exitosamente\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/solicitudes/1/estado?nuevoEstado=EN_REVISION",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"solicitudes",
+								"1",
+								"estado"
+							],
+							"query": [
+								{
+									"key": "nuevoEstado",
+									"value": "EN_REVISION",
+									"description": "Nuevo estado para la solicitud"
+								}
+							]
+						},
+						"description": "CP-04: Transición de estado exitosa sobre solicitud existente (ID 1)."
+					},
+					"response": []
+				},
+				{
+					"name": "CP-05 - Error ID inexistente (ID 999)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 404 Not Found\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"pm.test(\"Mensaje indica solicitud no encontrada\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Solicitud no encontrada\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/solicitudes/999/estado?nuevoEstado=EN_REVISION",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"solicitudes",
+								"999",
+								"estado"
+							],
+							"query": [
+								{
+									"key": "nuevoEstado",
+									"value": "EN_REVISION"
+								}
+							]
+						},
+						"description": "CP-05: Modificación sobre un ID no registrado."
+					},
+					"response": []
+				},
+				{
+					"name": "Asignar responsable",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Mensaje confirma responsable asignado\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Responsable asignado\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/solicitudes/1/responsable?responsable=Carlos Gomez&area=SECRETARIA_ACADEMICA",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"solicitudes",
+								"1",
+								"responsable"
+							],
+							"query": [
+								{
+									"key": "responsable",
+									"value": "Carlos Gomez",
+									"description": "Nombre del responsable asignado"
+								},
+								{
+									"key": "area",
+									"value": "SECRETARIA_ACADEMICA",
+									"description": "Área de derivación"
+								}
+							]
+						},
+						"description": "Asignación de responsable y área en legacy."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar todas las solicitudes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Respuesta es un array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(Array.isArray(jsonData)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/solicitudes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"solicitudes"
+							]
+						},
+						"description": "Obtiene la lista completa de solicitudes registradas en legacy."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar filtrando por estado y área",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Respuesta es un array con elementos filtrados\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(Array.isArray(jsonData)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/solicitudes?estado=EN_REVISION&area=SECRETARIA_ACADEMICA",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"solicitudes"
+							],
+							"query": [
+								{
+									"key": "estado",
+									"value": "EN_REVISION",
+									"description": "Filtro por estado"
+								},
+								{
+									"key": "area",
+									"value": "SECRETARIA_ACADEMICA",
+									"description": "Filtro por área"
+								}
+							]
+						},
+						"description": "Filtro combinado por estado y área en legacy."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Refactor v2 (/api/v2/solicitudes)",
+			"description": "Endpoints de la versión refactorizada desacoplada con DTOs en JSON, códigos HTTP semánticos y GlobalExceptionHandler.",
+			"item": [
+				{
+					"name": "CP-01 - Crear solicitud exitosa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Responde JSON con campos esperados y estado PENDIENTE\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"id\");",
+									"    pm.expect(jsonData.tipo).to.eql(\"HOMOLOGACION\");",
+									"    pm.expect(jsonData.prioridadTexto).to.eql(\"ALTA\");",
+									"    pm.expect(jsonData.estado).to.eql(\"PENDIENTE\");",
+									"    pm.expect(jsonData.estudianteLegajo).to.eql(\"50123\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"tipo\": \"HOMOLOGACION\",\n    \"descripcion\": \"Equivalencia de materias correlativas\",\n    \"prioridad\": 1,\n    \"legajo\": \"50123\",\n    \"nombreEstudiante\": \"Juan Perez\",\n    \"emailEstudiante\": \"juan.perez@alumnos.utn.edu.ar\",\n    \"carrera\": \"TUP\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/solicitudes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"solicitudes"
+							]
+						},
+						"description": "CP-01: Creación de solicitud con payload JSON, retornando 201 Created y SolicitudResponseDto."
+					},
+					"response": []
+				},
+				{
+					"name": "CP-02 - Error campo obligatorio vacío (tipo vacío)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"Mensaje indica que el tipo es obligatorio\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"El tipo de solicitud es obligatorio\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"tipo\": \"\",\n    \"descripcion\": \"Equivalencia de materias correlativas\",\n    \"prioridad\": 1,\n    \"legajo\": \"50123\",\n    \"nombreEstudiante\": \"Juan Perez\",\n    \"emailEstudiante\": \"juan.perez@alumnos.utn.edu.ar\",\n    \"carrera\": \"TUP\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/solicitudes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"solicitudes"
+							]
+						},
+						"description": "CP-02: Validación en SolicitudService capturada por GlobalExceptionHandler (400 Bad Request)."
+					},
+					"response": []
+				},
+				{
+					"name": "CP-03 - Error prioridad fuera de rango (prioridad 5)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"Mensaje indica prioridad inválida\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Prioridad invalida\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"tipo\": \"HOMOLOGACION\",\n    \"descripcion\": \"Equivalencia de materias correlativas\",\n    \"prioridad\": 5,\n    \"legajo\": \"50123\",\n    \"nombreEstudiante\": \"Juan Perez\",\n    \"emailEstudiante\": \"juan.perez@alumnos.utn.edu.ar\",\n    \"carrera\": \"TUP\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/solicitudes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"solicitudes"
+							]
+						},
+						"description": "CP-03: Validación del enum Prioridad.desdeNivel(5) retornando 400 Bad Request."
+					},
+					"response": []
+				},
+				{
+					"name": "CP-04 - Cambiar estado a EN_REVISION",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Estado se actualiza a EN_REVISION\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.estado).to.eql(\"EN_REVISION\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/solicitudes/1/estado?nuevoEstado=EN_REVISION",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"solicitudes",
+								"1",
+								"estado"
+							],
+							"query": [
+								{
+									"key": "nuevoEstado",
+									"value": "EN_REVISION",
+									"description": "Nuevo valor del enum EstadoSolicitud"
+								}
+							]
+						},
+						"description": "CP-04: Transición a EN_REVISION devolviendo el DTO actualizado en JSON."
+					},
+					"response": []
+				},
+				{
+					"name": "CP-05 - Error ID inexistente (ID 999)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 404 Not Found\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"pm.test(\"Mensaje indica solicitud no encontrada\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Solicitud no encontrada\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/solicitudes/999/estado?nuevoEstado=EN_REVISION",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"solicitudes",
+								"999",
+								"estado"
+							],
+							"query": [
+								{
+									"key": "nuevoEstado",
+									"value": "EN_REVISION"
+								}
+							]
+						},
+						"description": "CP-05: Solicitud con ID no existente capturada por GlobalExceptionHandler (404 Not Found)."
+					},
+					"response": []
+				},
+				{
+					"name": "Asignar responsable",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Responsable y área coinciden con lo asignado\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.responsable).to.eql(\"Carlos Gomez\");",
+									"    pm.expect(jsonData.area).to.eql(\"SECRETARIA_ACADEMICA\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/solicitudes/1/responsable?responsable=Carlos Gomez&area=SECRETARIA_ACADEMICA",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"solicitudes",
+								"1",
+								"responsable"
+							],
+							"query": [
+								{
+									"key": "responsable",
+									"value": "Carlos Gomez",
+									"description": "Nombre del responsable asignado"
+								},
+								{
+									"key": "area",
+									"value": "SECRETARIA_ACADEMICA",
+									"description": "Área institucional asignada"
+								}
+							]
+						},
+						"description": "Asignación de responsable devolviendo SolicitudResponseDto con status 200 OK."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar todas las solicitudes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Respuesta es una lista JSON tipada\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(Array.isArray(jsonData)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/solicitudes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"solicitudes"
+							]
+						},
+						"description": "Recupera la lista de todas las solicitudes persistidas en formato SolicitudResponseDto."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar filtrando por estado y área",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Respuesta es una lista JSON filtrada\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(Array.isArray(jsonData)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/solicitudes?estado=EN_REVISION&area=SECRETARIA_ACADEMICA",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"solicitudes"
+							],
+							"query": [
+								{
+									"key": "estado",
+									"value": "EN_REVISION",
+									"description": "Filtro por enum EstadoSolicitud"
+								},
+								{
+									"key": "area",
+									"value": "SECRETARIA_ACADEMICA",
+									"description": "Filtro por área de destino"
+								}
+							]
+						},
+						"description": "Filtro combinado por estado y área en la versión refactorizada."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
